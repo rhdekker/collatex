@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+" codebase="http://interedition.github.com/microservices/" href="server.jnlp">
+  <information>
+    <title>Interedition Microservices</title>
+    <vendor>Interedition</vendor>
+    <homepage href="http://www.interedition.eu/"/>
+    <description>Microservices developed by a European-funded development collective whose aim it is to promote the interoperability of the tools and methodology we use in the field of digital scholarly editing and research.</description>
+    <offline-allowed/>
+    <icon href="style/eu/interedition/style/interedition_logo.png"/>
+    <shortcut online="false">
+      <desktop/>
+      <menu/>
+    </shortcut>
+  </information>
+  <security>
+    <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.6+"/>
+        
+    <jar href="server-1.3-SNAPSHOT.jar" main="true"/>
+    <jar href="style-1.0.jar"/>
+    <jar href="tango-icon-theme-0.8.90.jar"/>
+    <jar href="jetty-6.1.26.jar"/>
+    <jar href="jetty-util-6.1.26.jar"/>
+    <jar href="servlet-api-2.5-20081211.jar"/>
+    <jar href="guava-r09.jar"/>
+    <jar href="slf4j-api-1.5.11.jar"/>
+    <jar href="jcl-over-slf4j-1.5.11.jar"/>
+    <jar href="slf4j-log4j12-1.5.11.jar"/>
+    <jar href="log4j-1.2.14.jar"/>
+
+  </resources>
+  <application-desc main-class="eu.interedition.server.ServerApplicationFrame"/>
+</jnlp>
