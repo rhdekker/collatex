@@ -2,6 +2,9 @@ package eu.interedition.server;
 
 import eu.interedition.server.collatex.VariantGraphResource;
 import freemarker.template.Configuration;
+import org.gearman.Gearman;
+import org.gearman.GearmanServer;
+import org.gearman.GearmanWorker;
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.Restlet;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -23,6 +27,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.net.InetAddress;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
@@ -90,13 +95,31 @@ public class ServerApplication extends Application implements InitializingBean {
     try {
       final ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"/application-context.xml"}, false);
 
-      final MutablePropertySources envProps = ctx.getEnvironment().getPropertySources();
+      final ConfigurableEnvironment environment = ctx.getEnvironment();
+      final MutablePropertySources envProps = environment.getPropertySources();
       envProps.addLast(new PropertiesPropertySource("system", System.getProperties()));
       envProps.addLast(new DetectingConfigurationPropertySource("detected"));
       envProps.addLast(new ResourcePropertySource(new ClassPathResource("/config.properties", ServerApplication.class)));
 
       ctx.registerShutdownHook();
       ctx.refresh();
+
+      final Gearman gearman = Gearman.createGearman();
+      Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        @Override
+        public void run() {
+          gearman.shutdown();
+        }
+      }));
+
+      final GearmanServer gearmanServer = gearman.createGearmanServer(
+              environment.getRequiredProperty("interedition.gearman.server.host"),
+              environment.getRequiredProperty("interedition.gearman.server.port", Integer.class)
+      );
+
+      final GearmanWorker worker = gearman.createGearmanWorker();
+      worker.addFunction("collatex", ctx.getBean(CollationWorker.class));
+      worker.addServer(gearmanServer);
 
       final ServerApplication application = ctx.getBean(ServerApplication.class);
 
@@ -105,7 +128,7 @@ public class ServerApplication extends Application implements InitializingBean {
       component.getClients().add(Protocol.FILE);
       component.getLogService().setEnabled(false);
       component.getDefaultHost().attach(application);
-      component.getServers().add(Protocol.HTTP, ctx.getEnvironment().getRequiredProperty("interedition.port", Integer.class)).getContext().getParameters().set("maxThreads", "512");
+      component.getServers().add(Protocol.HTTP, environment.getRequiredProperty("interedition.port", Integer.class)).getContext().getParameters().set("maxThreads", "512");
 
       Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         @Override

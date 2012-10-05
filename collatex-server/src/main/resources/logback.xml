@@ -8,6 +8,7 @@
     </appender>
     <logger name="eu.interedition" level="INFO"/>
     <logger name="freemarker" level="INFO"/>
+    <logger name="gearman" level="INFO"/>
     <logger name="java.awt" level="INFO"/>
     <logger name="javax.swing" level="INFO"/>
     <logger name="net.sf.ehcache" level="INFO"/>
