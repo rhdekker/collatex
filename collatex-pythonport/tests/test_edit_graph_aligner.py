@@ -4,6 +4,7 @@ Created on Aug 4, 2014
 @author: Ronald
 '''
 import unittest
+from collatex.suffix_based_scorer import Scorer
 from tests import unit_disabled
 from collatex.core_functions import VariantGraph
 from collatex.edit_graph_aligner import EditGraphAligner
@@ -44,7 +45,8 @@ class Test(unittest.TestCase):
         collation = Collation()
         collation.add_plain_witness("A", "a b c")
         collation.add_plain_witness("B", "b c")
-        aligner = EditGraphAligner(collation)
+        scorer = Scorer(collation)
+        aligner = EditGraphAligner(collation, scorer)
         graph = VariantGraph()
         aligner.collate(graph, collation)
         table = aligner.table
@@ -69,7 +71,8 @@ class Test(unittest.TestCase):
         collation = Collation()
         collation.add_plain_witness("A", "a a b c")
         collation.add_plain_witness("B", "a b c")
-        aligner = EditGraphAligner(collation)
+        scorer = Scorer()
+        aligner = EditGraphAligner(collation, scorer)
         graph = VariantGraph()
         aligner.collate(graph, collation)
         table = aligner.table
@@ -84,7 +87,8 @@ class Test(unittest.TestCase):
         collation = Collation()
         collation.add_plain_witness("A", "X a b c d e f X g h i Y Z j k")
         collation.add_plain_witness("B", "a b c Y d e f Y Z g h i X j k")
-        aligner = EditGraphAligner(collation)
+        scorer = Scorer(collation)
+        aligner = EditGraphAligner(collation, scorer)
         graph = VariantGraph()
         aligner.collate(graph, collation)
         superbase = aligner.new_superbase
