@@ -89,10 +89,10 @@ class EditGraphNode(object):
     Default implementation is a* based.
     '''
 class EditGraphAligner(CollationAlgorithm):
-    def __init__(self, collation, near_match=False, astar=False, debug_scores=False):
+    def __init__(self, collation, scorer, astar=False, debug_scores=False):
         self.collation = collation
+        self.scorer = scorer
         self.debug_scores = debug_scores
-        self.scorer = Scorer(collation, near_match)
         if not astar:
             self.align_function = self._align_table
         else:
