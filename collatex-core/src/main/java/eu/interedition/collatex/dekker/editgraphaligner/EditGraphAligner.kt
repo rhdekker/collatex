@@ -9,6 +9,8 @@ import java.util.*
  * Created by ronalddekker on 24/09/15.
  */
 public class EditGraphAligner : CollationAlgorithm.Base() {
+    public var table: EditGraphTable? = null
+
 
     override fun collate(against: VariantGraph?, witness: MutableIterable<Token>?) {
         // this is not possible, since this aligner needs to have an index of the whole witness set and a super base structure
@@ -46,42 +48,17 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         witnessTokens.addAll(witness)
 
         createTableAndScoreCells(superbase, witnessTokens)
-
     }
+
 
     private fun createTableAndScoreCells(superbase: List<Token>, witnessTokens: List<Token>) {
         // here begins the meat that we want to test..
         // we need to create table object that is size superbase +1 x length (witness) +1
         // note that the array is empty
-        val m = superbase.size() + 1
-        val n = witnessTokens.size() + 1
-        val table = Array(n, { arrayOfNulls<TableCell>(m) })
-
-        // we need to traverse the array diagonally and score each cell
-        table[0][0] = TableCell()
-
-        this.traverseDiagonallyAndScore(m, n)
+        val n = superbase.size() + 1
+        val m = witnessTokens.size() + 1
+        this.table = EditGraphTable(n, m)
+        table?.align()
     }
 
-    class TableCell()
-
-    // This function traverses the table diagonally and scores each cell.
-    // Original function from Mark Byers; translated from C into Kotlin.
-    private fun traverseDiagonallyAndScore(m: Int, n: Int) {
-        for (_slice in 0..m+n-1) {
-            val z1 = if (_slice < n) 0 else _slice - n + 1
-            val z2 = if (_slice < m) 0 else _slice - m + 1
-            val j = _slice - z2
-            while (j >= z1) {
-                val x = _slice - j
-                val y = j
-                // this I would like to see with a call back
-                this.scoreCell(y, x)
-            }
-        }
-    }
-
-    private fun scoreCell(y: Int, x: Int) {
-        print("$y, $x")
-    }
 }
