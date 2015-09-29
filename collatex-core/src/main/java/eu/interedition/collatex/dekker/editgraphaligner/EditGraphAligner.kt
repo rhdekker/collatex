@@ -57,7 +57,7 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         // note that the array is empty
         val n = superbase.size() + 1
         val m = witnessTokens.size() + 1
-        this.table = EditGraphTable(n, m)
+        this.table = EditGraphTable(n, m, Scorer(superbase, witnessTokens))
         table?.align()
     }
 
