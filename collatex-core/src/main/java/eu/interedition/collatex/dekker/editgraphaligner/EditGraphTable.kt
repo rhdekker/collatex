@@ -19,8 +19,8 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
 
     fun align() {
         // debug
-        println("length: "+cells.size())
-        println("width: "+cells[0].size())
+//        println("length: "+cells.size())
+//        println("width: "+cells[0].size())
 
         // we need to traverse the array diagonally and score each cell
         cells[0][0] = TableCell(0)
@@ -28,9 +28,9 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
         traverseDiagonallyAndScore()
     }
 
-    class TableCell(i: Int) {
-        // g stands for the number of gaps encountered
-        var g = 0
+    // g stands for the number of gaps encountered
+    class TableCell(val g: Int) {
+        var match: Boolean = false
     }
 
     // This function traverses the table diagonally and scores each cell.
@@ -98,58 +98,48 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
 // voor nu geef ik aan de scorer de superbase en de witness tokens mee, liever zou ik zien
 // dat daar de index meegegeven word...
 class Scorer(val superbase: List<Token>, val witness: List<Token>) {
-    fun score_cell(y: Int, x: Int, parent: EditGraphTable.TableCell?, editoperation: Int): EditGraphTable.TableCell {
+    fun score_cell(y: Int, x: Int, parent: EditGraphTable.TableCell?, editOperation: Int): EditGraphTable.TableCell {
         // no matching is possible in this case (always treated as a gap)
         // it is either an add of a delete
         if (x == 0 || y == 0) {
             return EditGraphTable.TableCell(parent!!.g - 1)
         }
 
+        // It is either an add/delete or match/replacement (so an add and a delete)
+        // It is a replacement
+        if (editOperation == 0) {
+            // fetch tokens when needed...
+            val b = superbase[x - 1]
+            val w = witness[y - 1]
+            val match = match(b, w)
+            // based on match or not and parent_node calculate new score
+            if (match) {
+                // do not change score for now
+                val table_node = EditGraphTable.TableCell(parent!!.g)
+                table_node.match = true
+                return table_node
+            } else {
+                val table_node = EditGraphTable.TableCell(parent!!.g - 2)
+                return table_node
+            }
+        } else {
+            // it is an add/delete
+            val table_node = EditGraphTable.TableCell(parent!!.g - 1)
+            return table_node
+        }
+
+
 
 
         println("$y;$x")
 
 
-        // fetch tokens when needed...
 //        println(superbase)
 //        println(witness)
-        val b = superbase[x-1]
-        val w = witness[y-1]
         return EditGraphTable.TableCell(0)
     }
 
-//    # no matching possible in this case (always treated as a gap)
-//    # it is either an add or a delete
-//    if x == 0 or y == 0:
-//    table_node.g = parent_node.g - 1
-//    return
-//
-//    # it is either an add/delete or replacement (so an add and a delete)
-//    # it is a replacement
-//    if edit_operation == 0:
-//    match = self.match_function(token_a, token_b)
-//    #             print("testing "+token_a.token_string+" and "+token_b.token_string+" "+str(match))
-//    # match = token_a.token_string == token_b.token_string
-//    # based on match or not and parent_node calculate new score
-//    if match==0:
-//    # mark the fact that this node is match
-//    table_node.match = True
-//    # do not change score for now
-//    table_node.g = parent_node.g
-//    # count segments
-//    if parent_node.match == False:
-//    table_node.segments = parent_node.segments + 1
-//    return
-//    if match==1:
-//    table_node.g = parent_node.g - 0.5 #TODO: TEST TEST TEST
-//    pass
-//    else:
-//    table_node.g = parent_node.g - 2
-//    return
-//    # it is an add/delete
-//    else:
-//    table_node.g = parent_node.g - 1
-//    return
-
-
+    private fun match(b: Token, w: Token): Boolean {
+        return false
+    }
 }
