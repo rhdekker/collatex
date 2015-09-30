@@ -53,30 +53,7 @@ public class JUnit4StringTest {
         collation.collate(graph)
         val table = algorithm.table
         assertRow(arrayListOf(0, -1, -2, -3), table!![0])
+        assertRow(arrayListOf(-1, -2, -1, -2), table!![1])
+        assertRow(arrayListOf(-2, -3, -2, -1), table!![2])
     }
-
-
-//    # we need to introduce a gap here
-//    def testOmission(self):
-//    collation = Collation()
-//    collation.add_plain_witness("A", "a b c")
-//    collation.add_plain_witness("B", "b c")
-//    scorer = Scorer(collation)
-//    aligner = EditGraphAligner(collation, scorer)
-//    graph = VariantGraph()
-//    aligner.collate(graph, collation)
-//    table = aligner.table
-//    #         self.debug_table(aligner, table)
-//    self.assertEqual(0, table[0][0].g)
-//    self.assertEqual(-1, table[0][1].g)
-//    self.assertEqual(-2, table[0][2].g)
-//    self.assertEqual(-3, table[0][3].g)
-//    self.assertEqual(-1, table[1][0].g)
-//    self.assertEqual(-2, table[1][1].g)
-//    self.assertEqual(-1, table[1][2].g)
-//    self.assertEqual(-2, table[1][3].g)
-//    self.assertEqual(-2, table[2][0].g)
-//    self.assertEqual(-3, table[2][1].g)
-//    self.assertEqual(-2, table[2][2].g)
-//    self.assertEqual(-1, table[2][3].g)
 }

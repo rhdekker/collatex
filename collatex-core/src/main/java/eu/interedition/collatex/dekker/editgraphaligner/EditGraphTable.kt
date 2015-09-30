@@ -1,6 +1,7 @@
 package eu.interedition.collatex.dekker.editgraphaligner
 
 import eu.interedition.collatex.Token
+import eu.interedition.collatex.simple.SimpleToken
 import java.util.*
 
 /**
@@ -140,6 +141,10 @@ class Scorer(val superbase: List<Token>, val witness: List<Token>) {
     }
 
     private fun match(b: Token, w: Token): Boolean {
+        // I want to use the LCP intervals index here, but with two witnesses it does not matter
+        if ((b as SimpleToken).normalized.equals((w as SimpleToken).normalized)) {
+            return true
+        }
         return false
     }
 }
