@@ -10,7 +10,7 @@ import java.util.*
  */
 public class EditGraphAligner : CollationAlgorithm.Base() {
     public var table: EditGraphTable? = null
-
+    val baseTokenToVertex = HashMap<Token, VariantGraph.Vertex>()
 
     override fun collate(against: VariantGraph?, witness: MutableIterable<Token>?) {
         // this is not possible, since this aligner needs to have an index of the whole witness set and a super base structure
@@ -21,6 +21,7 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         // merge the tokens of the first witness into the variant graph
         val tokens = witnesses[0]
         this.merge(against, tokens, Collections.emptyMap())
+        baseTokenToVertex.putAll(witnessTokenVertices)
 
         // create superbase from the tokens of the first witness
         var superbase = ArrayList<Token>()
@@ -42,6 +43,8 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
 
             // merge
             merge(against, nextWitness, alignment)
+            baseTokenToVertex.putAll(witnessTokenVertices)
+
             superbase = createSuperbaseFromVariantGraph(against)
 
         }
@@ -90,7 +93,7 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         val alignment = hashMapOf<Token, VariantGraph.Vertex>()
         for (token in tokenAlignment.keySet()) {
             val alignedBaseToken = tokenAlignment[token]
-            val vertex = witnessTokenVertices[alignedBaseToken]
+            val vertex = baseTokenToVertex[alignedBaseToken]
             if (vertex == null || alignedBaseToken == null) {
                 throw RuntimeException("vertex $vertex or aligned token $alignedBaseToken for token $token is unexpectedly null!")
             }
