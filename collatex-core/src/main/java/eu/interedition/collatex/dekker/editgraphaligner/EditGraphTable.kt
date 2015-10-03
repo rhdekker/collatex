@@ -18,7 +18,7 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
         return cells[index]
     }
 
-    fun align() {
+    fun align(): HashMap<Token, Token> {
         // debug
 //        println("length: "+cells.size())
 //        println("width: "+cells[0].size())
@@ -27,6 +27,63 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
         cells[0][0] = TableCell(0)
 
         traverseDiagonallyAndScore()
+
+        val alignment = getAlignmentFromTable()
+        return alignment
+    }
+
+
+    fun getAlignmentFromTable(): HashMap<Token, Token> {
+        val alignment = HashMap<Token, Token>()
+
+        // segment stuff
+        // note we traverse from right to left!
+        val last_x = n
+        val last_y = m
+        val newSuperbase = ArrayList<Token>()
+
+        // start lower right cell
+        var x = n-1
+        var y = m-1
+        // work our way to the upper left
+        while (x > 0 && y > 0) {
+            processCell(alignment, y, x)
+            // examine neighbor nodes
+            val nodesToExamine = HashSet<TableCell?>()
+            nodesToExamine.add(cells[y][x-1])
+            nodesToExamine.add(cells[y-1][x])
+            nodesToExamine.add(cells[y-1][x-1])
+            // calculate the maximum scoring parent node
+            val parentNode = Collections.max(nodesToExamine, TableCellComparator())
+            // move position
+            if (cells[y-1][x-1] == parentNode) {
+                // another match or replacement
+                y -= 1
+                x -= 1
+            } else {
+                if (cells[y-1][x] == parentNode) {
+                    // omission
+                    y -= 1
+                } else {
+                    if (cells[y][x-1] == parentNode) {
+                        // addition
+                        x -= 1
+                    }
+                }
+            }
+        }
+        // process additions/omissions in the begin of the superbase/witness
+        // addToSuperbase(0, 0)
+        return alignment
+    }
+
+
+
+
+
+    private fun processCell(alignment: HashMap<Token, Token>, y: Int, x: Int) {
+        val tokens = scorer.getTokens(y, x)
+        alignment[tokens.second]=tokens.first
     }
 
     // g stands for the number of gaps encountered
@@ -99,6 +156,12 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
 // voor nu geef ik aan de scorer de superbase en de witness tokens mee, liever zou ik zien
 // dat daar de index meegegeven word...
 class Scorer(val superbase: List<Token>, val witness: List<Token>) {
+    fun getTokens(y: Int, x: Int): Pair<Token, Token> {
+        val b = superbase[x - 1]
+        val w = witness[y - 1]
+        return Pair(b, w)
+    }
+
     fun score_cell(y: Int, x: Int, parent: EditGraphTable.TableCell?, editOperation: Int): EditGraphTable.TableCell {
         // no matching is possible in this case (always treated as a gap)
         // it is either an add of a delete

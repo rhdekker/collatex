@@ -26,7 +26,6 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         val superbase = ArrayList<Token>()
         superbase.addAll(tokens)
 
-        // TODO: here I might need to build a token to vertex map
 
         // now process the second till last witnesses
         for (x in 1..witnesses.size()-1) {
@@ -36,29 +35,40 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
             // TODO
 
             // align tokens of the next witness against the superbase
-            // TODO: add token to vertex map here as third parameter
             val alignment = alignTable(superbase, nextWitness)
+
+            // merge
+            merge(against, nextWitness, alignment)
         }
     }
 
-    private fun alignTable(superbase: List<Token>, witness: Iterable<Token>): Unit {
+    private fun alignTable(superbase: List<Token>, witness: Iterable<Token>): MutableMap<Token, VariantGraph.Vertex> {
         // convert witness tokens into a list, not efficient
         // but we need to traverse them many times (unless we are going to use integers are pointers to tokens in the token array in the future)
         val witnessTokens = ArrayList<Token>()
         witnessTokens.addAll(witness)
-
-        createTableAndScoreCells(superbase, witnessTokens)
+       return createTableAndScoreCells(superbase, witnessTokens)
     }
 
 
-    private fun createTableAndScoreCells(superbase: List<Token>, witnessTokens: List<Token>) {
+    private fun createTableAndScoreCells(superbase: List<Token>, witnessTokens: List<Token>): MutableMap<Token, VariantGraph.Vertex> {
         // here begins the meat that we want to test..
         // we need to create table object that is size superbase +1 x length (witness) +1
         // note that the array is empty
         val n = superbase.size() + 1
         val m = witnessTokens.size() + 1
         this.table = EditGraphTable(n, m, Scorer(superbase, witnessTokens))
-        table?.align()
+        val tokenAlignment = table!!.align()
+        // convert token token to token alignment into vertex to token alignment
+        val alignment = hashMapOf<Token, VariantGraph.Vertex>()
+        for (token in tokenAlignment.keySet()) {
+            val alignedBaseToken = tokenAlignment[token]
+            val vertex = witnessTokenVertices[alignedBaseToken]
+            if (vertex == null || alignedBaseToken == null) {
+                throw RuntimeException("vertex $vertex or aligned token $alignedBaseToken for token $token is unexpectedly null!")
+            }
+            alignment[token] = vertex
+        }
+        return alignment
     }
-
 }

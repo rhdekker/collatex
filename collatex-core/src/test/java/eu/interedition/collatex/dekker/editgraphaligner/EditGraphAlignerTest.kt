@@ -1,5 +1,6 @@
 package eu.interedition.collatex.dekker.editgraphaligner
 
+import eu.interedition.collatex.AbstractTest
 import eu.interedition.collatex.VariantGraph
 import eu.interedition.collatex.simple.SimpleCollation
 import eu.interedition.collatex.simple.SimpleWitness
@@ -18,7 +19,7 @@ import kotlin.test.assertEquals
 /**
  * JUnit 4 Test Case
  */
-public class JUnit4StringTest {
+public class JUnit4StringTest : AbstractTest() {
 
     @Before fun setUp() {
         // set up the test case
@@ -45,15 +46,22 @@ public class JUnit4StringTest {
 
     @Test fun testOmission() {
         val witnesses = ArrayList<SimpleWitness>()
-        witnesses.add(SimpleWitness("A", "a b c"))
-        witnesses.add(SimpleWitness("B", "b c"))
+        val w0 = SimpleWitness("A", "a b c")
+        val w1 = SimpleWitness("B", "b c")
+        witnesses.add(w0)
+        witnesses.add(w1)
         val algorithm = EditGraphAligner()
-        val collation = SimpleCollation(witnesses, algorithm, true)
+        val collation = SimpleCollation(witnesses, algorithm, false)
         val graph = VariantGraph()
         collation.collate(graph)
+        // assert gaps in edit graph table
         val table = algorithm.table
         assertRow(arrayListOf(0, -1, -2, -3), table!![0])
         assertRow(arrayListOf(-1, -2, -1, -2), table!![1])
         assertRow(arrayListOf(-2, -3, -2, -1), table!![2])
+        // assert alignment using alignment table
+        val t = AbstractTest.table(graph)
+        assertEquals("|a|b|c|", AbstractTest.toString(t, w0))
+        assertEquals("| |b|c|", AbstractTest.toString(t, w1))
     }
 }
