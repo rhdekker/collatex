@@ -23,7 +23,7 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
         this.merge(against, tokens, Collections.emptyMap())
 
         // create superbase from the tokens of the first witness
-        val superbase = ArrayList<Token>()
+        var superbase = ArrayList<Token>()
         superbase.addAll(tokens)
 
 
@@ -37,9 +37,31 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
             // align tokens of the next witness against the superbase
             val alignment = alignTable(superbase, nextWitness)
 
+            // debug
+            // println(alignment)
+
             // merge
             merge(against, nextWitness, alignment)
+            superbase = createSuperbaseFromVariantGraph(against)
+
         }
+    }
+
+    // create new superbase from variant graph
+    fun createSuperbaseFromVariantGraph(against: VariantGraph): ArrayList<Token> {
+        // NOTE: this is not the ultimate solution, since there are multiple possible topologic orders possible
+        val vertices = arrayListOf<VariantGraph.Vertex>()
+        vertices.addAll(against.vertices())
+
+        val superbase = arrayListOf<Token>()
+        for (vertex in vertices) {
+            val tokens = vertex.tokens().iterator()
+            // we need to skip start and end vertices
+            if (tokens.hasNext()) {
+                superbase.add(tokens.next())
+            }
+        }
+        return superbase
     }
 
     private fun alignTable(superbase: List<Token>, witness: Iterable<Token>): MutableMap<Token, VariantGraph.Vertex> {
@@ -53,12 +75,17 @@ public class EditGraphAligner : CollationAlgorithm.Base() {
 
     private fun createTableAndScoreCells(superbase: List<Token>, witnessTokens: List<Token>): MutableMap<Token, VariantGraph.Vertex> {
         // here begins the meat that we want to test..
+
         // we need to create table object that is size superbase +1 x length (witness) +1
         // note that the array is empty
         val n = superbase.size() + 1
         val m = witnessTokens.size() + 1
         this.table = EditGraphTable(n, m, Scorer(superbase, witnessTokens))
+
+        // align superbase and witness using the scorer
+        // it also creates a new superbase during the alignment
         val tokenAlignment = table!!.align()
+
         // convert token token to token alignment into vertex to token alignment
         val alignment = hashMapOf<Token, VariantGraph.Vertex>()
         for (token in tokenAlignment.keySet()) {

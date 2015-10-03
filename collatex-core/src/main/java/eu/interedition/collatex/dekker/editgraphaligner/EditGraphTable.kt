@@ -82,8 +82,10 @@ class EditGraphTable(val n: Int, val m: Int, val scorer: Scorer) {
 
 
     private fun processCell(alignment: HashMap<Token, Token>, y: Int, x: Int) {
-        val tokens = scorer.getTokens(y, x)
-        alignment[tokens.second]=tokens.first
+        if (cells[y][x]!!.match==true) {
+            val tokens = scorer.getTokens(y, x)
+            alignment[tokens.second]=tokens.first
+        }
     }
 
     // g stands for the number of gaps encountered
